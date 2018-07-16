@@ -1,0 +1,15 @@
+extends layout
+
+block content
+	h1 Cecelia's Lab 5
+	title Lab 5 - Gossip Protocol
+	p Welcome to Cecelia's Lab 5!
+	p Hello, #{user}!
+	form(action="/newmessage")
+		input(type="text")
+		input(type="submit", name="newmessage")
+	form(action="/logout")
+		input(type="submit", value="logout", name="logout")
+	+user-list(users)
+	+showMessages(messages)
+

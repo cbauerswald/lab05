@@ -1,0 +1,20 @@
+mixin homebutton
+  a(href="/") home
+
+mixin user-list(users)
+  h2 Users:
+  ul
+    each user in users
+      li 
+        a(href="/userpage?user="+ user)= user
+
+mixin showMessages(mList) 
+  h2 Messages
+  ul
+    each m in mList
+      li 
+        +display-message(m)
+
+
+mixin display-message(m)
+  p #{m.originator} (#{m.sequenceNumber}): #{m.text}

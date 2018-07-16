@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  h1 Cecelia's Lab 3
+  p Welcome to Cecelia's Lab 3!
+  p= message
+  form(action="/login")
+    label(for="username") Username:
+    input(name="username", type="text")
+    input(type="submit", value="login", name="login", id="login_button")
+  a(href="/newuser") Create Account
+  +user-list(users)

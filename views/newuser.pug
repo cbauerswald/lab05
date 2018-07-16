@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  h1 Cecelia's Lab 3
+  p Create an Account:
+  form(action="/create", method="post")
+    label(for="username") Create Username:
+    input(type="text", name="username")
+    input(type="submit", name="create-account", value="Create")
