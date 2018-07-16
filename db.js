@@ -28,7 +28,7 @@ var createMessage = function(originId, sequenceNumber, originator, text) {
 var updateUserReceives = function(user, originId, sequenceNumber) {
   MongoClient.connect(url, function(err, db) {
     var dbo = getDb(db);
-    var obj = {user: user._id, originId: originId};
+    var obj = {user: user.username, originId: originId};
     var updatedObj = {user: user.username, originId: originId, sequenceNumber: sequenceNumber};
     dbo.collection("user_receives").update(obj, updatedObj, {upsert: true}, function(err, result) {
       if (err) throw err;
@@ -45,17 +45,32 @@ var getMessagesForUser = function(user, response) {
       if (err) {
         throw err;
       } else {
-        allOriginIds = [];
-        for (r in result) {
-          allOriginIds.push(result[r].originId);
-        }
-        dbo.collection("messages").find({originId: { $in: allOriginIds }, sequenceNumber: { $lte: result[r].sequenceNumber }}).toArray(function(err, res) {
-          db.close();
-          response(res);
-        });
-        db.close();
+        getMessagesFromUserReceives(user, db, result, response);
       }
+      db.close();
     });
+  });
+}
+
+var getMessagesFromUserReceives = function(user, db, result, response) {
+  var dbo = getDb(db);
+  matchingUserReceivesDict = {};
+  for (r in result) {
+    matchingUserReceivesDict[result[r].originId] = result[r].sequenceNumber;
+  }
+  console.log("user receives for " + user.username + ":", result);
+  dbo.collection("messages").find({originId: { $in: Object.keys(matchingUserReceivesDict) }}).toArray(function(err, res) {
+    messages = [];
+    for (m in res) {
+      if (res[m].sequenceNumber <= matchingUserReceivesDict[res[m].originId] ) {
+        messages.push(res[m]);
+        //console.log(matchingUserReceivesDict[res[m].originId], ",", res[m].sequenceNumber, ",", matchingUserReceivesDict[res[m].originId] <= res[m].sequenceNumber)
+        //console.log("being pushed into messages list for " + user.username, res[m])
+      }
+    }
+    db.close();
+    // console.log("messages in get messages for user in db:", messages);
+    response(messages);
   });
 }
 
@@ -66,7 +81,6 @@ var updateUserState = function(username, messageOriginId, messageNum) {
       var update = myobj.state;
       update[messageOriginId] = messageNum;
       update = {$set: update};
-      console.log(update);
       dbo.collection("users").update(myobj, update, function(err, res) {
         if (err) throw err;
         db.close();
@@ -83,7 +97,7 @@ var updateListenerIdOnUser = function(username, listenerId, response) {
       { username: username}, 
       { $set: {listenerId: listenerId } }, 
       function(err, result) {
-        console.log("in mongo response in updateListenerIdOnUser");
+        // console.log("in mongo response in updateListenerIdOnUser");
         response(err, result);
         db.close();
     });
@@ -93,10 +107,9 @@ var updateListenerIdOnUser = function(username, listenerId, response) {
 var incrementNumSend = function(username) {
   MongoClient.connect(url, function(err, db) {
     var dbo = getDb(db);
-    console.log("username in increment num send ", username)
+    // console.log("username in increment num send ", username)
     var myobj = getUser(username, function(err, myobj) {
       var update = {$set: {numSend: myobj.numSend + 1}};
-      console.log(update);
       dbo.collection("users").update(myobj, update, function(err, res) {
         if (err) throw err;
         db.close();
@@ -112,7 +125,7 @@ var getAllUsernames = function(response) {
     var dbo = getDb(db);
     dbo.collection("users").find({}).toArray(function(err, result) {
       if (err) {
-        console.log(err);
+        throw err;
       } else {
         for(var r in result) {
           allUsers.push(result[r].username);
@@ -131,7 +144,7 @@ var getAllUsers = function(response) {
     var dbo = getDb(db);
     dbo.collection("users").find({}).toArray(function(err, result) {
       if (err) {
-        console.log(err);
+        throw err;
       } else {
         allUsers = result;
         db.close();
@@ -170,21 +183,6 @@ var getUserNoCallback = function(username, response) {
     return dbo.collection("users").findOne({username: username});
   });
 }
-
-// var updateCheckinOnUser = function(username, checkin, response) {
-//   MongoClient.connect(url, function(err, db) {
-//     if (err) throw err;
-//     var dbo = getDb(db);
-//     dbo.collection("users").updateOne(
-//       { username: username}, 
-//       { $set: {recentCheckin: checkin } }, 
-//       function(err, result) {
-//         console.log("in mongo response in updateCheckinOnUser");
-//         response(err, result);
-//         db.close();
-//     });
-//   });
-// }
 
 
 var getDb = function(db) {

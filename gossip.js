@@ -19,9 +19,8 @@ var runMessagingSystem = function(currentUser, friends, baseUrl) {
     'host': baseUrl,
     'sequenceNumber': currentUser.numSend
   }
-
-  delay=60000;
-  console.log("currentUser is ",  currentUser);
+  // console.log("in run messaging system, friends of " + currentUser.username + " are: ", friends);
+  delay=1200000;
   async.forever(
     function(next) {
       q = getPeer(state);                
@@ -81,7 +80,7 @@ var createWant = function(wants, endpoint) {
 
 var send = function(url, s, cookie) {
   url = "http://" + url;
-  console.log("url in send in gossip: ", url);
+  // console.log("url in send in gossip: ", url);
   request.post({
     url: url,
     form: s,

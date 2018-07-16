@@ -7,7 +7,6 @@ var gossip = require('../gossip');
 var messages = {}
 
 router.post('/', function(req, res, next) {
-  console.log("in listener!", req.sentToUser);
   
   var receiver = req.sentToUser.username;
 

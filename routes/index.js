@@ -36,17 +36,8 @@ router.get('/', function(req, res, next) {
       baseUrl = req.get('host');
       gossip.runMessagingSystem(currentUser, users, baseUrl, req.app.get('listenerId'));
 
-      // var requestLoop = setInterval( async function(){ 
-      //   request.get({
-      //     url:  state.host + "/listener/" + req.app.get('listenerId')
-      //   }, function(error, response, body) {
-      //     // console.log(error);
-      //     // console.log(body);
-      //   });
-      // }, 1000);
-
       dbManager.getMessagesForUser(currentUser, function(result) {
-        console.log("we have a result!", result[0]);
+        // console.log("we have a result in index for " + currentUser.username + "!", result[0]);
         res.render('homepage', {title: 'Express', user: loginCookie, users: usernames, messages: result}); 
       });
 
